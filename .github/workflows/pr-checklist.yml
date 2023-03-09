@@ -1,8 +1,8 @@
 name: Add labels to pull request based on checklist
 
 on:
-  pull_request_target:
-    types: [opened, edited, reopened]
+  pull_request:
+    types: [ opened, edited, synchronize ]
 
 jobs:
   add-labels:
@@ -10,58 +10,6 @@ jobs:
 
     steps:
       - name: Check if checklist items are completed
-        if: ${{ github.event.action == 'opened' || github.event.action == 'edited' || github.event.action == 'reopened' }}
-        run: |
-          echo "Reading pull request description..."
-          description=$(jq -r '.body' < $GITHUB_EVENT_PATH)
-          echo "Description:"
-          echo "$description"
-          echo "Checking checklist items..."
-          completed=$(echo "$description" | grep -E '^\s*- \[x\].*')
-          echo "Completed items:"
-          echo "$completed"
-          incomplete=$(echo "$description" | grep -E '^\s*- \[ \].*')
-          echo "Incomplete items:"
-          echo "$incomplete"
-          if [ -n "$incomplete" ]; then
-          echo "Checklist items not completed"
-          echo "::set-output name=labels::Checklist Items Incomplete"
-          else
-          echo "Checklist items completed"
-          echo "::set-output name=labels::Checklist Items Complete"
-          fi
-
-      - name: Add labels
-        uses: actions/github-script@v4
+        uses: mheap/require-checklist-action@v2
         with:
-          script: |
-            const { data: pullRequest } = await github.pulls.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number
-            })
-            
-            const currentLabels = pullRequest.labels.map(label => label.name)
-            const newLabels = JSON.parse(process.env.labels)
-            
-            for (const label of newLabels) {
-              if (!currentLabels.includes(label)) {
-                await github.issues.addLabels({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: context.payload.pull_request.number,
-                  labels: [label]
-                })
-              }
-            }
-            
-            for (const label of currentLabels) {
-              if (!newLabels.includes(label)) {
-                await github.issues.removeLabel({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: context.payload.pull_request.number,
-                  name: label
-                })
-              }
-            })
+          requireChecklist: true
