@@ -11,13 +11,23 @@ jobs:
     steps:
       - name: Check if checklist items are completed
         run: |
-          completed=$(jq -r '.body' < $GITHUB_EVENT_PATH | grep -E '^\s*- \[x\].*')
-          if echo "$completed" | grep -qE '^\s*- \[ \].*'; then
-            echo "Checklist items not completed"
-            echo "::set-output name=labels::Checklist Items Incomplete"
+          echo "Reading pull request description..."
+          description=$(jq -r '.body' < $GITHUB_EVENT_PATH)
+          echo "Description:"
+          echo "$description"
+          echo "Checking checklist items..."
+          completed=$(echo "$description" | grep -E '^\s*- \[x\].*')
+          echo "Completed items:"
+          echo "$completed"
+          incomplete=$(echo "$description" | grep -E '^\s*- \[ \].*')
+          echo "Incomplete items:"
+          echo "$incomplete"
+          if [ -n "$incomplete" ]; then
+          echo "Checklist items not completed"
+          echo "::set-output name=labels::Checklist Items Incomplete"
           else
-            echo "Checklist items completed"
-            echo "::set-output name=labels::Checklist Items Complete"
+          echo "Checklist items completed"
+          echo "::set-output name=labels::Checklist Items Complete"
           fi
 
       - name: Add labels
