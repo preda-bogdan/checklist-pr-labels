@@ -21,7 +21,7 @@ jobs:
              && grep -q '\* \[x\] The code passes when \[running the PHP CodeSniffer\]\(TESTING.md#run-php-codesniffer\)' $GITHUB_WORKSPACE/$GITHUB_REPOSITORY/pull/$PR_NUMBER.md \
              && grep -q '\* \[x\] Code meets \[WordPress Coding Standards\]\(DEVELOPMENT.md#coding-standards\) for PHP, HTML, CSS and JS' $GITHUB_WORKSPACE/$GITHUB_REPOSITORY/pull/$PR_NUMBER.md \
              && grep -q '\* \[x\] \[Security and Sanitization\]\(DEVELOPMENT.md#security-and-sanitization\) requirements have been followed' $GITHUB_WORKSPACE/$GITHUB_REPOSITORY/pull/$PR_NUMBER.md \
-             && grep -q '\* \[x\] I have assigned a reviewer or two to review this PR \(if you're not sure who to assign, we can do this step for you\)' $GITHUB_WORKSPACE/$GITHUB_REPOSITORY/pull/$PR_NUMBER.md; then
+             && grep -q '\* \[x\] I have assigned a reviewer or two to review this PR \(if you\'re not sure who to assign, we can do this step for you\)' $GITHUB_WORKSPACE/$GITHUB_REPOSITORY/pull/$PR_NUMBER.md; then
             # add "pr-is-tested" label
             echo "All required items are checked"
             curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
