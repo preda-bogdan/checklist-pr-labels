@@ -10,6 +10,7 @@ jobs:
 
     steps:
       - name: Check if checklist items are completed
+        if: ${{ github.event.action == 'opened' || github.event.action == 'edited' || github.event.action == 'reopened' }}
         run: |
           echo "Reading pull request description..."
           description=$(jq -r '.body' < $GITHUB_EVENT_PATH)
