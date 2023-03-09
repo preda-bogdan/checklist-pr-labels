@@ -1,38 +1,47 @@
-name: Check automatic testing checklist items
+name: Add labels to pull request based on checklist
 
 on:
   pull_request:
-    types: [opened, edited]
+    types: [opened, edited, synchronize]
 
 jobs:
-  check-list-job:
+  add-labels:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Add label if test checklist items are checked
+      - name: Check if checklist items are completed
         run: |
-          # get the PR number
-          PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-          
-          # check if the PR has all required checklist items
-          if grep -q '\* \[x\] I have \[written a test\]\(TESTING.md#writing-an-acceptance-test\) and included it in this PR' $GITHUB_WORKSPACE/$GITHUB_REPOSITORY/pull/$PR_NUMBER.md \
-             && grep -q '\* \[x\] I have \[run all tests\]\(TESTING.md#run-tests\) and they pass' $GITHUB_WORKSPACE/$GITHUB_REPOSITORY/pull/$PR_NUMBER.md \
-             && grep -q '\* \[x\] The code passes when \[running the PHP CodeSniffer\]\(TESTING.md#run-php-codesniffer\)' $GITHUB_WORKSPACE/$GITHUB_REPOSITORY/pull/$PR_NUMBER.md \
-             && grep -q '\* \[x\] Code meets \[WordPress Coding Standards\]\(DEVELOPMENT.md#coding-standards\) for PHP, HTML, CSS and JS' $GITHUB_WORKSPACE/$GITHUB_REPOSITORY/pull/$PR_NUMBER.md \
-             && grep -q '\* \[x\] \[Security and Sanitization\]\(DEVELOPMENT.md#security-and-sanitization\) requirements have been followed' $GITHUB_WORKSPACE/$GITHUB_REPOSITORY/pull/$PR_NUMBER.md \
-             && grep -q '\* \[x\] I have assigned a reviewer or two to review this PR \(if you\'re not sure who to assign, we can do this step for you\)' $GITHUB_WORKSPACE/$GITHUB_REPOSITORY/pull/$PR_NUMBER.md; then
-            # add "pr-is-tested" label
-            echo "All required items are checked"
-            curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/labels \
-            -d '["pr-is-tested"]'
+          completed=$(jq -r '.body' < $GITHUB_EVENT_PATH | grep -E '^\s*- \[x\].*')
+          if echo "$completed" | grep -qE '^\s*- \[ \].*'; then
+            echo "Checklist items not completed"
+            exit 1
           else
-            # add "not-tested" label
-            echo "Some or all required items are not checked"
-            curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/labels \
-            -d '["not-tested"]'
+            echo "Checklist items completed"
           fi
+
+      - name: Add labels
+        if: success()
+        uses: actions/github-script@v4
+        with:
+          script: |
+            const { data: pullRequest } = await github.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number
+            })
+            
+            if (pullRequest.labels.some(label => label.name === 'Checklist Items Incomplete')) {
+              await github.issues.removeLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                name: 'Checklist Items Incomplete'
+              })
+            }
+            
+            await github.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              labels: ['Checklist Items Complete']
+            })
