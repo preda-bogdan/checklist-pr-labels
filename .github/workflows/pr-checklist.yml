@@ -7,11 +7,11 @@ on:
 jobs:
   add-labels:
     runs-on: ubuntu-latest
-    permissions: read-all|write-all
 
     steps:
       - name: Check if checklist items are completed
         uses: preda-bogdan/gha-pr-check-helper@master
+        permissions: read-all|write-all
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           requireChecklist: true
