@@ -10,7 +10,7 @@ jobs:
 
     steps:
       - name: Check if checklist items are completed
-        uses: preda-bogdan/gha-pr-check-helper@v1
+        uses: preda-bogdan/gha-pr-check-helper@master
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           requireChecklist: true
