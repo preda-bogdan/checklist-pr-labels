@@ -10,7 +10,10 @@ jobs:
 
     steps:
       - name: Check if checklist items are completed
-        uses: mheap/require-checklist-action@v2
+        uses: preda-bogdan/gha-pr-check-helper@master
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           requireChecklist: true
+          onlyCheckBody: true
+          completedLabel: "test-checklist-completed"
+          incompleteLabel: "test-checklist-incomplete"
