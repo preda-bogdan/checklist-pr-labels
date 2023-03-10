@@ -4,11 +4,6 @@ on:
   pull_request:
     types: [ opened, edited, synchronize ]
 
-permissions:
-  actions: read|write
-  issues: read|write
-  statuses: read|write
-
 jobs:
   add-labels:
     runs-on: ubuntu-latest
