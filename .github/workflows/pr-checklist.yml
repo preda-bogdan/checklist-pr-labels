@@ -4,7 +4,10 @@ on:
   pull_request:
     types: [ opened, edited, synchronize ]
 
-permissions: read-all|write-all
+permissions:
+  actions: read|write
+  issues: read|write
+  statuses: read|write
 
 jobs:
   add-labels:
