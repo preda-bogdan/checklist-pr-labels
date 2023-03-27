@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Check if checklist items are completed
-        uses: Codeinwp/gha-pr-check-helper@master
+        uses: Codeinwp/gha-pr-check-helper@development
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           requireChecklist: true
