@@ -19,3 +19,4 @@ jobs:
           onlyCheckBody: true
           completedLabel: "test-checklist-completed"
           incompleteLabel: "test-checklist-incomplete"
+          skipLabel: "allow-checklist-skip"
